@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSTree with Node Counts</title>
+    <!-- Include jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Include JSTree -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.12/themes/default/style.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.12/jstree.min.js"></script>
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" />
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+    <style>
+        /* JSTree Custom Styles for Better Highlight Visibility */
+    #jstree .jstree-anchor {
+        color: #d1e7ff; /* Light Blue Text */
+    }
+
+    #jstree .jstree-anchor:hover {
+        background-color: #1e5ba4; /* Bright Blue Background */
+        color: #fff; /* White Text */
+    }
+
+    #jstree .jstree-clicked {
+        background-color: #4c90d9; /* Highlight Blue */
+        color: #fff !important; /* Ensure white text for good contrast */
+        font-weight: bold; /* Make the text bold */
+        border-radius: 3px; /* Add a subtle rounded border */
+        padding: 3px; /* Add padding for better readability */
+    }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+            background-color: #1b3a57; /* Navy Blue Background */
+            color: #fff; /* White Text */
+        }
+
+        /* Left Navigation Menu */
+        #nav-container {
+            width: 20%;
+            background-color: #14233a; /* Dark Navy */
+            border-right: 1px solid #0d1826;
+            padding: 10px;
+            overflow-y: auto;
+        }
+
+        #nav-container h2 {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            color: #d1e7ff; /* Light Blue Text */
+        }
+
+        #nav-container ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        #nav-container ul li {
+            margin: 5px 0;
+        }
+
+        #nav-container ul li a {
+            text-decoration: none;
+            color: #d1e7ff;
+            padding: 5px 10px;
+            display: block;
+            border-radius: 4px;
+        }
+
+        #nav-container ul li a:hover {
+            background-color: #1e5ba4; /* Bright Blue */
+        }
+
+        /* Tree View Container */
+        #tree-container {
+            width: 30%;
+            border-right: 1px solid #0d1826;
+            padding: 10px;
+            overflow-y: auto;
+            background-color: #14233a; /* Dark Navy */
+        }
+
+        #tree-container h2 {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            color: #d1e7ff; /* Light Blue Text */
+        }
+
+        /* Results Container */
+        #results-container {
+            flex-grow: 1;
+            padding: 20px;
+            background-color: #1b3a57; /* Navy Blue */
+            color: #fff;
+        }
+
+        #results-container h2 {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            color: #d1e7ff; /* Light Blue Text */
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        table th, table td {
+            border: 1px solid #0d1826; /* Dark Border */
+            padding: 8px;
+            text-align: left;
+            color: #fff; /* White Text */
+        }
+
+        table th {
+            background-color: #1e5ba4; /* Bright Blue */
+        }
+
+        table tr:nth-child(even) {
+            background-color: #14233a; /* Slightly Darker Navy for Alternating Rows */
+        }
+    </style>
+</head>
+<body>
+    <!-- Left Navigation Menu -->
+    <div id="nav-container">
+        <h2>Navigation</h2>
+        <ul>
+            <li><a href="#section1">Dashboard</a></li>
+            <li><a href="#section2">Reports</a></li>
+            <li><a href="#section3">Settings</a></li>
+            <li><a href="#section4">Help</a></li>
+        </ul>
+    </div>
+
+    <!-- Tree View Container -->
+    <div id="tree-container">
+        <h2>Organization Hierarchy</h2>
+        <div id="jstree"></div>
+    </div>
+
+    <!-- Results Container -->
+    <div id="results-container">
+        <h2>Node Records</h2>
+        <div id="node-details">
+            <p>Select a node to see its records.</p>
+        </div>
+    </div>
+
+<script>
+    $(document).ready(function () {
+        // Mock data for records associated with each node
+        const mockRecords = {
+            "1-1": [
+                { id: 201, valueType: "Facet Value 1", column1: "Value C1", column2: "Value C2", column3: "Value C3" },
+                { id: 202, valueType: "Facet Value 2", column1: "Value D1", column2: "Value D2", column3: "Value D3" }
+            ],
+            "1-2": [
+                { id: 301, valueType: "Facet Value 1", column1: "Value A1", column2: "Value A2", column3: "Value A3" },
+                { id: 302, valueType: "Facet Value 2", column1: "Value B1", column2: "Value B2", column3: "Value B3" },
+                { id: 303, valueType: "Facet Value 3", column1: "Value C1", column2: "Value C2", column3: "Value C3" }
+            ],
+            "2-1": [
+                { id: 401, valueType: "Facet Value 1", column1: "Value X1", column2: "Value X2", column3: "Value X3" },
+                { id: 402, valueType: "Facet Value 3", column1: "Value Y1", column2: "Value Y2", column3: "Value Y3" }
+            ],
+            "2-2": [
+                { id: 501, valueType: "Facet Value 2", column1: "Value Z1", column2: "Value Z2", column3: "Value Z3" }
+            ]
+        };
+
+        // Function to calculate total count for a parent node
+        const calculateParentNodeCount = (childIds) => {
+            let count = 0;
+            childIds.forEach(childId => {
+                count += mockRecords[childId] ? mockRecords[childId].length : 0;
+            });
+            return count;
+        };
+
+        // Function to aggregate records for parent nodes
+        const aggregateRecordsForParent = (childIds) => {
+            let aggregatedRecords = [];
+            childIds.forEach(childId => {
+                if (mockRecords[childId]) {
+                    aggregatedRecords = aggregatedRecords.concat(mockRecords[childId]);
+                }
+            });
+            return aggregatedRecords;
+        };
+
+        // Dynamically generate tree data with record counts
+        const generateTreeData = () => {
+            return [
+                {
+                    id: "1",
+                    text: `Parent Node 1 (${calculateParentNodeCount(["1-1", "1-2"])})`,
+                    state: { opened: true },
+                    children: [
+                        { id: "1-1", text: `Child Node 1-1 (${mockRecords["1-1"].length})` },
+                        { id: "1-2", text: `Child Node 1-2 (${mockRecords["1-2"].length})` }
+                    ]
+                },
+                {
+                    id: "2",
+                    text: `Parent Node 2 (${calculateParentNodeCount(["2-1", "2-2"])})`,
+                    state: { opened: false },
+                    children: [
+                        { id: "2-1", text: `Child Node 2-1 (${mockRecords["2-1"].length})` },
+                        { id: "2-2", text: `Child Node 2-2 (${mockRecords["2-2"].length})` }
+                    ]
+                }
+            ];
+        };
+
+        // Initialize JSTree
+        $('#jstree').jstree({
+            core: {
+                data: generateTreeData()
+            }
+        });
+
+        // Function to build a DataTable
+        const buildDataTable = (records, tableId, pageLength = 10) => {
+            $(`#${tableId}`).DataTable({
+                data: records,
+                columns: [
+                    { title: "ID", data: "id" },
+                    { title: "Column 1", data: "column1" },
+                    { title: "Column 2", data: "column2" },
+                    { title: "Column 3", data: "column3" }
+                ],
+                pageLength: pageLength, // Set default page length
+                lengthChange: false,   // Remove "Show # entries" from each table
+                searching: false,      // Disable search box
+                destroy: true          // Allow reinitialization
+            });
+        };
+
+        // Event listener for node selection
+        $('#jstree').on('select_node.jstree', function (e, data) {
+            const selectedNodeId = data.node.id;
+
+            // Determine records to display
+            let records = [];
+            if (selectedNodeId === "1") {
+                records = aggregateRecordsForParent(["1-1", "1-2"]);
+            } else if (selectedNodeId === "2") {
+                records = aggregateRecordsForParent(["2-1", "2-2"]);
+            } else {
+                records = mockRecords[selectedNodeId] || [];
+            }
+
+            // Filter records by facet values
+            const facetValue1Records = records.filter(record => record.valueType === "Facet Value 1");
+            const facetValue2Records = records.filter(record => record.valueType === "Facet Value 2");
+            const facetValue3Records = records.filter(record => record.valueType === "Facet Value 3");
+
+            // Update the results container with 3 tables
+            $('#node-details').html(`
+                <h3>Facet Value 1</h3>
+                <table id="facet-value-1" class="display" style="width:100%"></table>
+                <h3>Facet Value 2</h3>
+                <table id="facet-value-2" class="display" style="width:100%"></table>
+                <h3>Facet Value 3</h3>
+                <table id="facet-value-3" class="display" style="width:100%"></table>
+            `);
+
+            // Initialize DataTables for each facet value
+            const pageLength = 5; // Set the same page length for all tables
+            buildDataTable(facetValue1Records, "facet-value-1", pageLength);
+            buildDataTable(facetValue2Records, "facet-value-2", pageLength);
+            buildDataTable(facetValue3Records, "facet-value-3", pageLength);
+        });
+    });
+</script>
+
+</body>
+</html>
