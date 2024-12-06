@@ -26,4 +26,10 @@ The key focus of the project is to:
 
 ---
 
+## Actions
+
+To run the backend REST application, locate the main method in ChallengeApplication class
+to run it in your IDE. By default the application listens on port 8080. And you can access
+the REST endpoint at http://localhost:8080/nodes/1-1.
+
 By working on this project, we aim to establish a collaborative environment and build familiarity with tools, frameworks, and team workflows.
