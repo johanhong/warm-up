@@ -29,7 +29,7 @@ jobs:
         cache: maven
     - name: Build with Maven
       working-directory: ./backend
-      run: mvn clean install
+      run: mvn clean install -Ddepgraph.skip=true
 
     # Optional: Uploads the full dependency graph to GitHub to improve the quality of Dependabot alerts this repository can receive
     - name: Update dependency graph
